@@ -1050,3 +1050,9 @@ end
 config :plausible, Plausible.Cache.Adapter, sessions: [partitions: 100]
 
 config :phoenix_storybook, enabled: env !== "prod"
+
+# OpenID Connect SSO (optional)
+config :plausible,
+  oidc_issuer: System.get_env("OIDC_ISSUER"),
+  oidc_client_id: System.get_env("OIDC_CLIENT_ID"),
+  oidc_client_secret: System.get_env("OIDC_CLIENT_SECRET")

@@ -441,6 +441,11 @@ defmodule PlausibleWeb.Router do
     post "/activate", AuthController, :activate
     get "/login", AuthController, :login_form
     post "/login", AuthController, :login
+
+    # OpenID Connect SSO
+    get "/auth/oidc", OIDCController, :login
+    get "/auth/oidc/callback", OIDCController, :callback
+
     get "/password/request-reset", AuthController, :password_reset_request_form
     post "/password/request-reset", AuthController, :password_reset_request
     get "/2fa/setup/force-initiate", AuthController, :force_initiate_2fa_setup
