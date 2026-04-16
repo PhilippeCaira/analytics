@@ -203,8 +203,7 @@ function ExplorationColumn({
         <ul className="flex flex-col gap-y-0.5 px-1.5 pb-1.5 h-108 overflow-y-auto">
           {listItems.map(({ step, visitors }) => {
             const label = `${step.name} ${step.pathname}`
-            const isSelected =
-              !!selected && isSameStep(step, selected)
+            const isSelected = !!selected && isSameStep(step, selected)
             const visitorsToShow =
               isSelected && selectedVisitors !== null
                 ? selectedVisitors
