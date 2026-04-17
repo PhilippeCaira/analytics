@@ -1,0 +1,64 @@
+name: Build & push OIDC image
+
+on:
+  push:
+    branches: [oidc]
+  schedule:
+    - cron: "0 5 * * 1" # Lundi 5h UTC — check upstream
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE: ${{ github.repository_owner }}/plausible-oidc
+  UPSTREAM: plausible/analytics
+
+jobs:
+  sync-and-build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: oidc
+          fetch-depth: 0
+
+      - name: Sync with upstream
+        if: github.event_name == 'schedule'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote add upstream https://github.com/${{ env.UPSTREAM }}.git || true
+          git fetch upstream master
+          # Rebase nos commits OIDC sur le dernier master upstream
+          if git rebase upstream/master; then
+            git push origin oidc --force-with-lease
+            echo "SYNCED=true" >> $GITHUB_ENV
+          else
+            git rebase --abort
+            echo "::warning::Rebase failed — manual intervention needed"
+            echo "SYNCED=false" >> $GITHUB_ENV
+          fi
+
+      - name: Detect version
+        id: version
+        run: |
+          # Extraire la version depuis mix.exs
+          VERSION=$(grep 'version:' mix.exs | head -1 | grep -oP '"\K[^"]+')
+          echo "version=v${VERSION}" >> $GITHUB_OUTPUT
+          echo "Detected version: v${VERSION}"
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE }}:${{ steps.version.outputs.version }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE }}:latest
