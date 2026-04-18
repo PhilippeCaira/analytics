@@ -47,8 +47,8 @@ jobs:
       - name: Detect version
         id: version
         run: |
-          # Extraire la version depuis mix.exs
-          VERSION=$(grep 'version:' mix.exs | head -1 | grep -oP '"\K[^"]+' || echo "0.0.0")
+          # Version depuis le git tag ou default mix.exs
+          VERSION=$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || echo "0.0.1")
           echo "version=v${VERSION}" >> $GITHUB_OUTPUT
           echo "Detected version: v${VERSION}"
 
