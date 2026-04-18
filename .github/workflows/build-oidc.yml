@@ -41,11 +41,14 @@ jobs:
             echo "SYNCED=false" >> $GITHUB_ENV
           fi
 
+      - name: Lowercase image name
+        run: echo "IMAGE_LC=$(echo "$IMAGE" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Detect version
         id: version
         run: |
           # Extraire la version depuis mix.exs
-          VERSION=$(grep 'version:' mix.exs | head -1 | grep -oP '"\K[^"]+')
+          VERSION=$(grep 'version:' mix.exs | head -1 | grep -oP '"\K[^"]+' || echo "0.0.0")
           echo "version=v${VERSION}" >> $GITHUB_OUTPUT
           echo "Detected version: v${VERSION}"
 
@@ -60,5 +63,5 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE }}:${{ steps.version.outputs.version }}
-            ${{ env.REGISTRY }}/${{ env.IMAGE }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_LC }}:${{ steps.version.outputs.version }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_LC }}:latest
