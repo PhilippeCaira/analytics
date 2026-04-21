@@ -62,7 +62,7 @@ defmodule PlausibleWeb.OIDCController do
         end
 
       conn
-      |> UserAuth.set_logged_in(user)
+      |> UserAuth.log_in_user(user)
       |> redirect(to: "/")
     else
       _ ->
