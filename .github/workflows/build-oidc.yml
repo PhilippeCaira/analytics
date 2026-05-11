@@ -47,8 +47,10 @@ jobs:
       - name: Detect version
         id: version
         run: |
-          # Version depuis le git tag ou default mix.exs
-          VERSION=$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || echo "0.0.1")
+          # Filtrer les tags non-semver (ex: voidc-base/v3.2.0) qui contiennent
+          # un slash et produisent un tag Docker invalide.
+          VERSION=$(git tag --list 'v*.*.*' '[0-9]*.*.*' --sort=-version:refname 2>/dev/null | head -1 | sed 's/^v//')
+          [ -z "$VERSION" ] && VERSION="0.0.1"
           echo "version=v${VERSION}" >> $GITHUB_OUTPUT
           echo "Detected version: v${VERSION}"
 
